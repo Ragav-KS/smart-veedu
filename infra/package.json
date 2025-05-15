@@ -1,0 +1,24 @@
+{
+  "name": "@smart-veedu/infra",
+  "bin": {
+    "infra": "bin/infra.ts"
+  },
+  "scripts": {
+    "cdk": "cdk",
+    "lint": "eslint .",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.195.0",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@dotenvx/dotenvx": "^1.44.0",
+    "@smart-veedu/eslint-config": "workspace:*",
+    "@types/node": "^22.15.17",
+    "aws-cdk": "^2.1014.0",
+    "eslint": "^9.26.0",
+    "ts-node": "^10.9.2",
+    "vitest": "^3.1.3"
+  }
+}

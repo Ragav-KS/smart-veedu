@@ -1,0 +1,41 @@
+meta {
+  name: execute
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{apiBaseUrl}}/smart-home/fulfillment
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "requestId": "123456",
+    "inputs": [
+      {
+        "intent": "action.devices.EXECUTE",
+        "payload": {
+          "commands": [
+            {
+              "devices": [
+                {
+                  "id": "light-1"
+                }
+              ],
+              "execution": [
+                {
+                  "command": "action.devices.commands.OnOff",
+                  "params": {
+                    "on": true
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

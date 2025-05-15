@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Smart Veedu - SmartHome function",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

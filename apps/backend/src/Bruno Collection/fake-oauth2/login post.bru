@@ -1,0 +1,20 @@
+meta {
+  name: login post
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{apiBaseUrl}}/fake-oauth2/login
+  body: formUrlEncoded
+  auth: inherit
+}
+
+body:form-urlencoded {
+  responseUrl: http://example.com/?code=xxxxxx
+  state: aaaa
+}
+
+script:pre-request {
+  req.setMaxRedirects(0);
+}
