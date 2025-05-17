@@ -39,16 +39,20 @@ const googleSmartHomeProjectId = env.APP_GOOGLE_SMARTHOME_PROJECT_ID;
 
 const app = new App();
 
-new CognitoUserPoolStack(app, `${AppName}-CognitoUserPoolStack`, {
-  env: {
-    account: defaultAccount,
-    region: defaultRegion,
+const cognitoUserPoolStack = new CognitoUserPoolStack(
+  app,
+  `${AppName}-CognitoUserPoolStack`,
+  {
+    env: {
+      account: defaultAccount,
+      region: defaultRegion,
+    },
+    googleSmartHomeProjectId,
+    userPoolCognitoDomainPrefix,
+    userPoolCustomDomainName,
+    domainCertificateArn: appGlobalDomainCertArn,
   },
-  googleSmartHomeProjectId,
-  userPoolCognitoDomainPrefix,
-  userPoolCustomDomainName,
-  domainCertificateArn: appGlobalDomainCertArn,
-});
+);
 
 const smartHomeLambdaStack = new SmartHomeLambdaStack(
   app,
@@ -67,6 +71,7 @@ new RestApiStack(app, `${AppName}-RestApiStack`, {
     region: defaultRegion,
   },
   smartHomeFnAliasArn: smartHomeLambdaStack.lambdaFnAlias.functionArn,
-  restApiDomainCertificate: appRegionalDomainCertArn,
   restApiDomainName,
+  restApiDomainCertificate: appRegionalDomainCertArn,
+  cognitoUserPool: cognitoUserPoolStack.userPool,
 });

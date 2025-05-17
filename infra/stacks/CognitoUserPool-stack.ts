@@ -3,7 +3,9 @@ import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import {
   CfnManagedLoginBranding,
   ManagedLoginVersion,
+  OAuthScope,
   UserPool,
+  UserPoolResourceServer,
 } from 'aws-cdk-lib/aws-cognito';
 import { Construct } from 'constructs';
 import { AppName } from '../utils/constants';
@@ -16,6 +18,8 @@ interface CognitoUserPoolStackProps extends StackProps {
 }
 
 export class CognitoUserPoolStack extends Stack {
+  userPool: UserPool;
+
   constructor(scope: Construct, id: string, props: CognitoUserPoolStackProps) {
     super(scope, id, props);
 
@@ -32,12 +36,12 @@ export class CognitoUserPoolStack extends Stack {
       domainCertificateArn,
     );
 
-    const userPool = new UserPool(this, `${AppName}UserPool`, {
+    this.userPool = new UserPool(this, `${AppName}UserPool`, {
       selfSignUpEnabled: true,
       signInAliases: { email: true },
     });
 
-    userPool.addDomain('CognitoDomain', {
+    this.userPool.addDomain('CognitoDomain', {
       cognitoDomain: {
         domainPrefix: userPoolCognitoDomainPrefix,
       },
@@ -45,7 +49,7 @@ export class CognitoUserPoolStack extends Stack {
     });
 
     // Make sure that the base domain has an A record in your DNS.
-    userPool.addDomain('CustomDomain', {
+    this.userPool.addDomain('CustomDomain', {
       customDomain: {
         domainName: userPoolCustomDomainName,
         certificate: importedCertificate,
@@ -53,11 +57,32 @@ export class CognitoUserPoolStack extends Stack {
       managedLoginVersion: ManagedLoginVersion.NEWER_MANAGED_LOGIN,
     });
 
-    const googleHomeAppClient = userPool.addClient('GoogleHomeAppClient', {
+    const restApiResourceServer = new UserPoolResourceServer(
+      this,
+      `${AppName}UserPoolResourceServer`,
+      {
+        identifier: 'VeeduRestApi',
+        userPool: this.userPool,
+        scopes: [
+          {
+            scopeName: 'SmartHome',
+            scopeDescription: 'Smart Home Integration',
+          },
+        ],
+      },
+    );
+
+    const googleHomeAppClient = this.userPool.addClient('GoogleHomeAppClient', {
       oAuth: {
         flows: {
           authorizationCodeGrant: true,
         },
+        scopes: [
+          OAuthScope.resourceServer(restApiResourceServer, {
+            scopeName: 'SmartHome',
+            scopeDescription: 'Smart Home Integration',
+          }),
+        ],
         callbackUrls: [
           `https://oauth-redirect.googleusercontent.com/r/${googleSmartHomeProjectId}`,
         ],
@@ -66,7 +91,7 @@ export class CognitoUserPoolStack extends Stack {
     });
 
     new CfnManagedLoginBranding(this, `${AppName}LoginPageBranding`, {
-      userPoolId: userPool.userPoolId,
+      userPoolId: this.userPool.userPoolId,
       clientId: googleHomeAppClient.userPoolClientId,
       useCognitoProvidedValues: true,
     });

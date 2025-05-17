@@ -2,6 +2,7 @@ import { Size, Stack, StackProps } from 'aws-cdk-lib';
 import {
   AccessLogFormat,
   BasePathMapping,
+  CognitoUserPoolsAuthorizer,
   Deployment,
   DomainName,
   EndpointType,
@@ -12,6 +13,7 @@ import {
   Stage,
 } from 'aws-cdk-lib/aws-apigateway';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
+import type { UserPool } from 'aws-cdk-lib/aws-cognito';
 import { Function } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
@@ -19,16 +21,21 @@ import { AppName } from '../utils/constants';
 
 interface RestApiStackProps extends StackProps {
   smartHomeFnAliasArn: string;
-  restApiDomainCertificate: string;
   restApiDomainName: string;
+  restApiDomainCertificate: string;
+  cognitoUserPool: UserPool;
 }
 
 export class RestApiStack extends Stack {
   constructor(scope: Construct, id: string, props: RestApiStackProps) {
     super(scope, id, props);
 
-    const { smartHomeFnAliasArn, restApiDomainName, restApiDomainCertificate } =
-      props;
+    const {
+      smartHomeFnAliasArn,
+      restApiDomainName,
+      restApiDomainCertificate,
+      cognitoUserPool,
+    } = props;
 
     const importedCertificate = Certificate.fromCertificateArn(
       this,
@@ -49,11 +56,24 @@ export class RestApiStack extends Stack {
       minCompressionSize: Size.bytes(500),
     });
 
+    const authorizer = new CognitoUserPoolsAuthorizer(
+      this,
+      `${AppName}RestApiAuthorizer`,
+      {
+        authorizerName: 'CognitoAuthorizer',
+        cognitoUserPools: [cognitoUserPool],
+      },
+    );
+
     restApi.root.addProxy({
       anyMethod: true,
       defaultIntegration: new LambdaIntegration(lambdaFnAlias, {
         proxy: true,
       }),
+      defaultMethodOptions: {
+        authorizer,
+        authorizationScopes: ['VeeduRestApi/SmartHome'],
+      },
     });
 
     const prodStage = new Stage(this, `${AppName}RestApiStage`, {
