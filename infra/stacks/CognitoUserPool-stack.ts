@@ -39,6 +39,13 @@ export class CognitoUserPoolStack extends Stack {
     this.userPool = new UserPool(this, `${AppName}UserPool`, {
       selfSignUpEnabled: true,
       signInAliases: { email: true },
+      signInPolicy: {
+        allowedFirstAuthFactors: {
+          password: true,
+          passkey: true,
+        },
+      },
+      passkeyRelyingPartyId: userPoolCustomDomainName,
     });
 
     this.userPool.addDomain('CognitoDomain', {
@@ -73,6 +80,10 @@ export class CognitoUserPoolStack extends Stack {
     );
 
     const googleHomeAppClient = this.userPool.addClient('GoogleHomeAppClient', {
+      authFlows: {
+        user: true,
+        userSrp: true,
+      },
       oAuth: {
         flows: {
           authorizationCodeGrant: true,
