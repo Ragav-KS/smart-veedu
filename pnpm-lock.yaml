@@ -36,7 +36,7 @@ importers:
         specifier: ^5.8.3
         version: 5.8.3
 
-  apps/backend:
+  apps/smarthome-lambda:
     dependencies:
       '@hono/zod-validator':
         specifier: ^0.4.3
