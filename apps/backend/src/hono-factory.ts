@@ -1,4 +1,3 @@
-import type { UUID } from 'crypto';
 import type { Env } from 'hono';
 import type {
   ApiGatewayRequestContext,
@@ -9,9 +8,22 @@ import { Factory } from 'hono/factory';
 import type { Bindings, Variables } from 'hono/types';
 
 export interface CustomApiGatewayRequestContext
-  extends Omit<ApiGatewayRequestContext, 'authorizer'> {
+  extends ApiGatewayRequestContext {
   authorizer: {
-    principalId: UUID;
+    claims: {
+      origin_jti: string;
+      sub: string;
+      token_use: string;
+      scope: string;
+      auth_time: string;
+      iss: string;
+      exp: string;
+      version: string;
+      iat: string;
+      client_id: string;
+      jti: string;
+      username: string;
+    };
   };
 }
 
@@ -21,10 +33,9 @@ interface AWSBindings extends Bindings {
   requestContext: CustomApiGatewayRequestContext;
 }
 
-interface CustomVariables extends Variables {
-  authorizer: {
-    principalId: UUID;
-  };
+export interface CustomVariables extends Variables {
+  authClaims: CustomApiGatewayRequestContext['authorizer']['claims'];
+  jwtPayload: CustomApiGatewayRequestContext['authorizer']['claims'];
 }
 
 interface AWSHonoEnv extends Env {

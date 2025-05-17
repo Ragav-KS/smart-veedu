@@ -15,10 +15,6 @@ lambda.zip
 # deps
 node_modules/
 
-# env
-.env
-.env.production
-
 # logs
 logs/
 *.log

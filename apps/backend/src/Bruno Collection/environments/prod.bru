@@ -2,4 +2,11 @@ vars {
   apiDomain: api.smart-veedu.ragav-ks.in
   apiProto: https
   apiBaseUrl: {{apiProto}}://{{apiDomain}}
+  authorization_url: {{process.env.USER_POOL_AUTHORIZATION_URL}}
+  access_token_url: {{process.env.USER_POOL_ACCESS_TOKEN_URL}}
+  callback_url: {{process.env.USER_POOL_CALLBACK_URL}}
 }
+vars:secret [
+  client_id,
+  client_secret
+]

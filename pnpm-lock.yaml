@@ -41,9 +41,6 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.4.3
         version: 0.4.3(hono@4.7.9)(zod@3.24.4)
-      actions-on-google:
-        specifier: ^3.0.0
-        version: 3.0.0
       hono:
         specifier: ^4.7.9
         version: 4.7.9
@@ -60,6 +57,9 @@ importers:
       '@types/node':
         specifier: ^22.15.17
         version: 22.15.17
+      actions-on-google:
+        specifier: ^3.0.0
+        version: 3.0.0
       esbuild:
         specifier: ^0.21.5
         version: 0.21.5

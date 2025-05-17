@@ -2,4 +2,11 @@ vars {
   apiDomain: 127.0.0.1:3000
   apiProto: http
   apiBaseUrl: {{apiProto}}://{{apiDomain}}
+  authorization_url: {{process.env.USER_POOL_AUTHORIZATION_URL}}
+  access_token_url: {{process.env.USER_POOL_ACCESS_TOKEN_URL}}
+  callback_url: {{process.env.USER_POOL_CALLBACK_URL}}
 }
+vars:secret [
+  client_id,
+  client_secret
+]

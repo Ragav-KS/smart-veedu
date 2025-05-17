@@ -1,17 +1,42 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import type { SmartHomeV1Response } from 'actions-on-google';
+import { zValidator } from '@hono/zod-validator';
+import { jwk } from 'hono/jwk';
 import { factory } from '../hono-factory';
-import { app } from '../services/smarthomeApp';
+import { smartHomeRequestSchema } from '../schema/SmartHome';
+import { smartHomeFulfillmentProcessor } from '../services/SmartHome/fulfillmentProcessor';
 
 export const smartHomeRoute = factory.createApp();
 
-smartHomeRoute.all('/fulfillment', async (c) => {
-  const body = await c.req.json();
-  const headers = Object.fromEntries(c.req.raw.headers.entries());
+if (import.meta.env.VITE_IS_LOCAL_RUN) {
+  smartHomeRoute.use(
+    '*',
+    jwk({
+      jwks_uri: import.meta.env.VITE_USER_POOL_TOKEN_SIGNING_URL,
+    }),
+  );
+}
 
-  const response = (await app.handler(body, headers)) as {
-    body: SmartHomeV1Response;
-  };
-
-  return c.json(response.body);
+smartHomeRoute.use('*', (c, next) => {
+  c.set(
+    'authClaims',
+    !import.meta.env.VITE_IS_LOCAL_RUN
+      ? c.env.requestContext.authorizer.claims
+      : c.get('jwtPayload'),
+  );
+  return next();
 });
+
+smartHomeRoute.post(
+  '/fulfillment',
+  zValidator('json', smartHomeRequestSchema),
+  async (c) => {
+    const smartHomeRequest = c.req.valid('json');
+    const authClaims = c.get('authClaims');
+
+    const response = await smartHomeFulfillmentProcessor(
+      smartHomeRequest,
+      authClaims.sub,
+    );
+
+    return c.json(response);
+  },
+);
